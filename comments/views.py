@@ -3,9 +3,10 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import CommentSerializer,CommentCreateSerializer,ReCommentSerializer,ReCommentCreateSerializer
+from .models import Comment,ReComment
 
 # Create your views here.
-class Comment(APIView):
+class CommentView(APIView):
     def get(self, request, board_id):
         boards = get_object_or_404(Board, id=board_id)
         comments = boards.comments.all()
@@ -31,7 +32,7 @@ class Comment(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class ReComment(APIView):
+class ReCommentView(APIView):
     def get(self, request, comment_id):
         comments = get_object_or_404(Comment, id=comment_id)
         recomments = comments.recomments.all()

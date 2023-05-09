@@ -12,12 +12,13 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         fields = ['content']
     
     def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        instance.content = validated_data.get('content', instance.content)
+        return instance.save()
         
 class ReCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model:ReComment
-        fields = ['id', 'content', 'created_at', 'user', 'board', 'comment']
+        fields = ['id', 'content', 'created_at', 'user', 'comment']
         
 class ReCommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,4 +26,6 @@ class ReCommentCreateSerializer(serializers.ModelSerializer):
         fields = ['content']
         
     def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        instance.content = validated_data.get('content', instance.content)
+        return instance.save()
+        
