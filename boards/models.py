@@ -3,8 +3,7 @@ from django.db import models
 
 
 class Board(models.Model):
-    # user = models.ForeignKey(User, on_delete=models.CASCADE)
-    # nickname = models.ForeignKey(User, on_delete=models.CASCADE)???? 닉네임은 어떻게 가져오지? 뷰에서??
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     user = models.IntegerField()
     title = models.CharField(max_length=50)
     content = models.TextField()
