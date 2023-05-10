@@ -15,4 +15,4 @@ class BoardDetailSerializer(serializers.ModelSerializer):
 class BoardCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ("pk", "title", "content", "image", "boardtype")
+        fields = ("title", "content", "image", "boardtype")
