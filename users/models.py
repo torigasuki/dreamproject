@@ -32,6 +32,9 @@ class User(AbstractBaseUser):
         max_length=255,
         unique=True,
     )
+    
+    #팔로우
+    followings = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
