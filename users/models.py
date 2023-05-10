@@ -55,3 +55,7 @@ class User(AbstractBaseUser):
     @property          #필수사항
     def is_staff(self):
         return self.is_admin
+
+class Verify(models.Model):
+    email = models.EmailField()
+    code = models.CharField(max_length=6)

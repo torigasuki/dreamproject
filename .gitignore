@@ -347,3 +347,8 @@ secrets.json
 
 *.lock
 *.toml
+
+*/migrations/*.py
+*/migrations/*.pyc
+*/migrations/__pycache__/
+!*/migrations/__init__.py
