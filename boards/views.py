@@ -13,7 +13,7 @@ class BoardListView(APIView):
         serializer = BoardListSerializer(boards, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, boardtype):
+    def post(self, request):
         serializer = BoardCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
