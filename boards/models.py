@@ -14,6 +14,8 @@ class Board(models.Model):
     boardtype = models.CharField(max_length=20, choices = BOARD_TYPE_CHOICES, error_messages={'message':'게시판 종류는 필수 선택 사항입니다.'})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    likes = models.ManyToManyField(User, related_name="like_boards")
+    #bookmarks = models.ManyToManyField(User, related_name='bookmarked_boards')
 
     def __str__(self):
         return str(self.title)
