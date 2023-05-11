@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.urls import reverse
 
 
 class UserManager(BaseUserManager):
@@ -34,6 +35,7 @@ class User(AbstractBaseUser):
     )
     
     #팔로우
+    nickname = models.CharField(max_length=20)
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
