@@ -40,8 +40,8 @@ class SendVerificationCodeView(APIView):
         verify_code = Verify(email=email, code=verification_code)
         verify_code.save()
         email_message.send() # 이메일 전송
-        return Response({'verification_code': verification_code}) # 인증 코드 반환
-        #return Response{{"message": "이메일을 전송했습니다."}, status=status.HTTP_200_OK}}
+        # return Response({'verification_code': verification_code}) # 인증 코드 반환
+        return Response ({"message": "이메일을 전송했습니다."}, status=status.HTTP_200_OK)
 
  
 class UserView(APIView) :
