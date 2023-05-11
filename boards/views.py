@@ -37,7 +37,7 @@ class BoardDetailView(APIView):
         boards = get_object_or_404(Board, id=board_id) 
         serializer = BoardDetailSerializer(boards)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
     def put(self, request, boardtype, board_id):
         board = get_object_or_404(Board, id=board_id)
         if request.user == board.user:

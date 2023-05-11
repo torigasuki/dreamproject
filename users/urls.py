@@ -13,6 +13,8 @@ urlpatterns = [
     path('login/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('kakao/' , views.kakaoLogin.as_view(), name='kakao_login_view'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),   
-    path('follow/<int:user_id>/', views.FollowView.as_view(), name='follow_view'),#팔로우
-    
+    path('follower/', views.FollowerView.as_view(), name='follower_view'),     
+    path('following/', views.FollowingView.as_view(), name='following_view'), 
+
+
 ]
