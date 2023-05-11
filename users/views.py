@@ -9,6 +9,8 @@ from rest_framework_simplejwt.views import (
 )
 import requests
 from users.models import User,Verify
+from boards.models import Board
+from boards.serializers import BoardListSerializer
 from users.serializers import CustomTokenObtainPairSerializer, UserSerializer,VerificationCodeSerializer
 from django.core.mail import EmailMessage
 from django.utils.crypto import get_random_string
@@ -45,10 +47,11 @@ class SendVerificationCodeView(APIView):
 
  
 class UserView(APIView) :
+    permission_classes = [permissions.AllowAny]
     def get(self, request):
-        """ 사용자 정보를 response 합니다."""
-
-        return Response(UserSerializer(request.user).data)
+        my_board= Board.objects.filter(user=request.user).order_by('-created_at')[:10]
+        serializer = BoardListSerializer(my_board, many=True)
+        return Response(serializer.data)
     
     def post(self, request):
         verification_serializer = VerificationCodeSerializer(data=request.data)
@@ -120,7 +123,7 @@ class kakaoLogin(APIView):
             data={
                 "grant_type":"authorization_code",
                 "client_id":REST_API_KEY,
-                "redirect_uri":"http://127.0.0.1:5500/index.html",
+                "redirect_uri":"http://127.0.0.1:5500/html/main.html",
                 "code":code,
             },
         )
@@ -133,15 +136,16 @@ class kakaoLogin(APIView):
                 },
             )
         user_data = user_data.json()
-        
         kakao_email = user_data.get("kakao_account")['email']
-        kakao_nickname = user_data.get("kakao_account")['nickname']
+        kakao_nickname = user_data.get("properties")['nickname']
         
         
         if User.objects.filter(email=kakao_email).exists():
-            user = User.objects.get(email=kakao_email,nickname=kakao_nickname)
+            user = User.objects.get(email=kakao_email)
             refresh = RefreshToken.for_user(user)
             refresh["email"] = kakao_email
+            refresh["nickname"] = kakao_nickname
+            refresh["social"]="kakao"
             return Response(
                 {
                     "refresh": str(refresh),
@@ -150,13 +154,13 @@ class kakaoLogin(APIView):
                 status=status.HTTP_200_OK
             )
         else:
-            user = User.objects.create(email=kakao_email)
+            user = User.objects.create(email=kakao_email,nickname=kakao_nickname)
             user.set_unusable_password()
             user.save()
             refresh = RefreshToken.for_user(user)
             refresh["email"] = kakao_email
             refresh["nickname"] = kakao_nickname
-            
+            refresh["social"]="kakao"
             return Response(
                 {
                     "refresh": str(refresh),
