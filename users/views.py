@@ -84,19 +84,33 @@ class UserView(APIView) :
         return Response({'message': 'delete 요청입니다.'})
     
 
-class FollowView(APIView) :       # 팔로우
-    def post(self, request, user_id):
-        you = get_object_or_404(User, id=user_id)
+class FollowingView(APIView) :       # 팔로우
+    def get(self, request):
+        """ 사용자 정보를 response 합니다."""
+        me= request.user
+        return Response(UserSerializer(me.following.all(), many=True).data)
+    #get이 두개여도 싸우지 않는다..! 먼저 있는애가 무시됨, 따라서 두개 있는것이 의막 없음
+    #클래스 두개 있어야하고, url도 달라야함 
+    
+    # follower 등록, 내 팔로워 목록 확인, 내 팔로잉 목록 확인 url 만들기 
+    def post(self, request):
+        you = get_object_or_404(User, id=request.data.get('id'))
         me = request.user
-        if me in you.followers.all():
-            you.followers.remove(me)
+        print(you,me)
+        if you in me.following.all():
+            me.following.remove(you)
             return Response("unfllow했습니다.", status=status.HTTP_200_OK)
         else:
-            you.followers.add(me)
+            me.following.add(you)
             return Response("follow했습니다.", status=status.HTTP_200_OK)
-        
- 
+        return Response()
 
+class FollowerView(APIView):
+    def get(self, request):
+        """ 사용자 팔로워 정보를 response 합니다."""
+        me= request.user
+        return Response(UserSerializer(me.followers.all(), many=True).data)
+    
 class CustomTokenObtainPairView(TokenObtainPairView) :
     serializer_class = CustomTokenObtainPairSerializer
 # 회원탈퇴 구현은 인증방식과 상관이 없음  
@@ -168,3 +182,4 @@ class kakaoLogin(APIView):
                 },
                 status=status.HTTP_200_OK
             )
+
