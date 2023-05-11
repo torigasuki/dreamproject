@@ -7,6 +7,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta :
         model = User
         fields = "__all__"
+        #비밀번호 마이페이지에서 안보이게 하기, 비밀번호 입력할때만 조회 가능
+        extra_kwargs = {
+           "password":{
+                "write_only":True,
+            }, 
+        }
         
     def create(self, validated_data):
         user= super().create(validated_data)
