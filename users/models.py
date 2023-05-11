@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.urls import reverse
 
 
 class UserManager(BaseUserManager):
@@ -33,9 +34,15 @@ class User(AbstractBaseUser):
         unique=True,
     )
 
+
     #팔로우, 다대다관계: 서로 참조 가능, 나뉘어 있을 필요 없고 User안에 있어도 됨, 
     #symmetric
     following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
+    
+
+    #팔로우
+    nickname = models.CharField(max_length=20)
+    followings = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
