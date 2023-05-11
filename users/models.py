@@ -33,7 +33,7 @@ class User(AbstractBaseUser):
         max_length=255,
         unique=True,
     )
-    
+
     #팔로우
     nickname = models.CharField(max_length=20)
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
