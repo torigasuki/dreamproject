@@ -4,14 +4,24 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from boards.serializers import BoardDetailSerializer, BoardListSerializer, BoardCreateSerializer
 from boards.models import Board
-
+from django.db.models import Max
 
 
 class BoardListView(APIView):
-    def get(self, request, boardtype):
-        boards = Board.objects.filter(boardtype=boardtype)
-        serializer = BoardListSerializer(boards, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, boardtype=None):
+        if boardtype:
+            boards = Board.objects.filter(boardtype=boardtype).order_by('-created_at')
+            serializer = BoardListSerializer(boards, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            boardtype_list=['BOARDTOSLEEP','BOARDTOAWAKE','BOARDTOHEAL']
+            data = []
+            for boardtype in boardtype_list:
+                boards = Board.objects.filter(boardtype=boardtype).annotate(latest_date=Max('created_at')).order_by('-latest_date')[:5]
+                serializer = BoardListSerializer(boards, many=True)
+                data+=serializer.data
+            return Response(data, status=status.HTTP_200_OK)
+        
 
     def post(self, request):
         serializer = BoardCreateSerializer(data=request.data)
