@@ -14,7 +14,7 @@ from django.core.mail import EmailMessage
 from django.utils.crypto import get_random_string
 from rest_framework_simplejwt.tokens import RefreshToken
 import re
-
+from dream.settings import REST_API_KEY
 EMAIL_REGEX = re.compile(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
 
 class SendVerificationCodeView(APIView):
@@ -85,7 +85,7 @@ class mockView(APIView) :
         return Response("get 요청")       
          
 KAKAO_URL = "https://kauth.kakao.com/oauth/token"
-REST_API_KEY = "055c93384e5e1b3418c5cb85bafa4b5d"
+
 class kakaoLogin(APIView):
     def post(self,request):
         code = request.data.get('code')
