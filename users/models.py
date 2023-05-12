@@ -38,6 +38,11 @@ class User(AbstractBaseUser):
     #팔로우, 다대다관계: 서로 참조 가능, 나뉘어 있을 필요 없고 User안에 있어도 됨, 
     #symmetric
     following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
+
+    bookmark = models.ManyToManyField('boards.Board', related_name="bookmarking_people", blank=True)
+    likes = models.ManyToManyField('boards.Board', related_name="liking_people", blank=True)
+
+
     
 
     #팔로우

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from users.models import User, Verify
+from boards.models import Board
 from django.shortcuts import get_object_or_404
 
 class UserSerializer(serializers.ModelSerializer):
@@ -29,14 +30,26 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user    
 
-
+class LikesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = "__all__"
+    
+class BookMarkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = "__all__"
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
+
+        
+
         token['email'] = user.email
         token['nickname']=user.nickname
+
         return token
     
     

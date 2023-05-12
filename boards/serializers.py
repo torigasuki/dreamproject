@@ -10,7 +10,9 @@ class BoardListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Board
-        fields = ("pk", "title", "created_at", "boardtype", "image","likes","user")
+
+        fields = ("pk", "title", "created_at", "boardtype", "image","likes","user","bookmark")
+
         
 
 class BoardDetailSerializer(serializers.ModelSerializer):
