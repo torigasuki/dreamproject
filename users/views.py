@@ -8,9 +8,11 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from users.models import User,Verify
-from users.serializers import CustomTokenObtainPairSerializer, UserSerializer,VerificationCodeSerializer
+from users.serializers import LikesSerializer, BookMarkSerializer,CustomTokenObtainPairSerializer, UserSerializer,VerificationCodeSerializer
 from django.core.mail import EmailMessage
 from django.utils.crypto import get_random_string
+from boards.models import Board
+
 
 class SendVerificationCodeView(APIView):
     def post(self, request):
@@ -76,19 +78,17 @@ class FollowingView(APIView) :       # 팔로우
         return Response(UserSerializer(me.following.all(), many=True).data)
     #get이 두개여도 싸우지 않는다..! 먼저 있는애가 무시됨, 따라서 두개 있는것이 의막 없음
     #클래스 두개 있어야하고, url도 달라야함 
-    
+
     # follower 등록, 내 팔로워 목록 확인, 내 팔로잉 목록 확인 url 만들기 
     def post(self, request):
         you = get_object_or_404(User, id=request.data.get('id'))
         me = request.user
-        print(you,me)
         if you in me.following.all():
             me.following.remove(you)
             return Response("unfllow했습니다.", status=status.HTTP_200_OK)
         else:
             me.following.add(you)
             return Response("follow했습니다.", status=status.HTTP_200_OK)
-        return Response()
 
 class FollowerView(APIView):
     def get(self, request):
@@ -96,6 +96,45 @@ class FollowerView(APIView):
         me= request.user
         return Response(UserSerializer(me.followers.all(), many=True).data)
     
+
+class BookMark(APIView):
+    def get(self, request):
+        """ 사용자 정보를 response 합니다."""
+        me= request.user
+        return Response(BookMarkSerializer(me.bookmark.all(), many=True).data)
+    
+    def post(self, request):
+        board = get_object_or_404(Board, id=request.data.get('id'))
+        me = request.user
+
+        if board in me.bookmark.all():
+            me.bookmark.remove(board)
+            return Response("해제했습니다.", status=status.HTTP_200_OK)
+        else:
+            me.bookmark.add(board)
+            return Response("북마크했습니다.", status=status.HTTP_200_OK)
+
+
+class LikeView(APIView):
+    def get(self, request):
+        """ 사용자 정보를 response 합니다."""
+        me= request.user
+        return Response(len(LikesSerializer(me.likes.all(), many=True).data))
+    
+    def post(self, request):
+        board = get_object_or_404(Board, id=request.data.get('id'))
+        me = request.user
+
+        if board in me.likes.all():
+            me.likes.remove(board)
+            return Response("좋아요 취소했습니다.", status=status.HTTP_200_OK)
+        else:
+            me.likes.add(board)
+            return Response("좋아요~♡", status=status.HTTP_200_OK)
+
+   
+
+
 class CustomTokenObtainPairView(TokenObtainPairView) :
     serializer_class = CustomTokenObtainPairSerializer
 # 회원탈퇴 구현은 인증방식과 상관이 없음  

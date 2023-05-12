@@ -1,5 +1,6 @@
 from django.urls import path, include
 from users import views
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -14,4 +15,6 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),   
     path('follower/', views.FollowerView.as_view(), name='follower_view'),     
     path('following/', views.FollowingView.as_view(), name='following_view'), 
+    path('bookmark/', views.BookMark.as_view(), name='bookmark'),
+    path('likes/', views.LikeView.as_view(), name='like_view'),
 ]

@@ -27,7 +27,7 @@ class BoardDetailView(APIView):
         boards = get_object_or_404(Board, id=board_id) 
         serializer = BoardDetailSerializer(boards)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     def put(self, request, boardtype, board_id):
         board = get_object_or_404(Board, id=board_id)
         if request.user == board.user:
@@ -48,25 +48,5 @@ class BoardDetailView(APIView):
         else:
             return Response("삭제 권한이 없습니다.", status=status.HTTP_403_FORBIDDEN)
 
-class LikeView(APIView):
-    def post(self, request, boardtype, board_id):
-        board = get_object_or_404(Board, id=board_id)
-        if request.user in board.likes.all():
-            board.likes.remove(request.user)
-            return Response("좋아요 취소했습니다.", status=status.HTTP_200_OK)
-        else:
-            board.likes.add(request.user)
-            return Response("좋아요 했습니다.", status=status.HTTP_200_OK)
 
 
-# class BookMarkView(APIView):
-#     def get(self, request, board_id):
-#         return Response()
-#     def post(self, request,board_id):
-#         board = get_object_or_404(Board, id=board_id)
-#         if request.user in board.bookmarks.all():
-#             board.bookmarks.remove(request.user)
-#             return Response("북마크 취소했습니다.", status=status.HTTP_200_OK)
-#         else:
-#             board.bookmarks.add(request.user)
-#             return Response("북마크 했습니다.", status=status.HTTP_200_OK)

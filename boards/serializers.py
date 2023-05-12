@@ -5,7 +5,7 @@ from boards.models import Board
 class BoardListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ("pk", "title", "updated_at", "boardtype", "image","likes")
+        fields = ("pk", "title", "updated_at", "boardtype", "image","likes","bookmark")
         
 
 class BoardDetailSerializer(serializers.ModelSerializer):
