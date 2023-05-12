@@ -7,11 +7,20 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+import requests
 from users.models import User,Verify
+
+
+from boards.models import Board
+from boards.serializers import BoardListSerializer
 from users.serializers import LikesSerializer, BookMarkSerializer,CustomTokenObtainPairSerializer, UserSerializer,VerificationCodeSerializer
 from django.core.mail import EmailMessage
 from django.utils.crypto import get_random_string
-from boards.models import Board
+from rest_framework_simplejwt.tokens import RefreshToken
+import re
+from dream.settings import REST_API_KEY
+EMAIL_REGEX = re.compile(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+KAKAO_URL = "https://kauth.kakao.com/oauth/token"
 
 
 class SendVerificationCodeView(APIView):
@@ -21,6 +30,8 @@ class SendVerificationCodeView(APIView):
             return Response({"message": "이메일을 입력해주세요."}, status=status.HTTP_400_BAD_REQUEST)
         elif User.objects.filter(email=email).exists():
             return Response({"message": "이미 가입된 이메일입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        elif not EMAIL_REGEX.match(email):
+            return Response({'message': 'Invalid email'}, status=status.HTTP_400_BAD_REQUEST)
         code = Verify.objects.filter(email=email)
         if code.exists():
             code.delete()
@@ -34,13 +45,16 @@ class SendVerificationCodeView(APIView):
         verify_code = Verify(email=email, code=verification_code)
         verify_code.save()
         email_message.send() # 이메일 전송
-        return Response({'verification_code': verification_code}) # 인증 코드 반환
+        # return Response({'verification_code': verification_code}) # 인증 코드 반환
+        return Response ({"message": "이메일을 전송했습니다."}, status=status.HTTP_200_OK)
 
+ 
 class UserView(APIView) :
+    permission_classes = [permissions.AllowAny]
     def get(self, request):
-        """ 사용자 정보를 response 합니다."""
-
-        return Response(UserSerializer(request.user).data)
+        my_board= Board.objects.filter(user=request.user).order_by('-created_at')[:10]
+        serializer = BoardListSerializer(my_board, many=True)
+        return Response(serializer.data)
     
     def post(self, request):
         verification_serializer = VerificationCodeSerializer(data=request.data)
@@ -49,6 +63,8 @@ class UserView(APIView) :
             if serializer.is_valid():
                 serializer.save()
                 return Response({"massage":"가입완료"}, status= status.HTTP_201_CREATED)
+            else:
+                return Response({"message":f"${serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)   
         else:
             return Response({"message":f"${verification_serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -149,4 +165,61 @@ class mockView(APIView) :
         user = request.user
         # user.is_admin = True
         # user.save()
-        return Response("get 요청")            
+        return Response("get 요청")       
+         
+
+class kakaoLogin(APIView):
+    def post(self,request):
+        code = request.data.get('code')
+        access_token = requests.post(
+            KAKAO_URL,
+            headers={"Content-Type":"application/x-www-form-urlencoded"},
+            data={
+                "grant_type":"authorization_code",
+                "client_id":REST_API_KEY,
+                "redirect_uri":"http://127.0.0.1:5500/html/main.html",
+                "code":code,
+            },
+        )
+        access_token = access_token.json().get("access_token")
+        user_data = requests.get(
+                "https://kapi.kakao.com/v2/user/me",
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+                },
+            )
+        user_data = user_data.json()
+        kakao_email = user_data.get("kakao_account")['email']
+        kakao_nickname = user_data.get("properties")['nickname']
+        
+        
+        if User.objects.filter(email=kakao_email).exists():
+            user = User.objects.get(email=kakao_email)
+            refresh = RefreshToken.for_user(user)
+            refresh["email"] = kakao_email
+            refresh["nickname"] = kakao_nickname
+            refresh["social"]="kakao"
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                status=status.HTTP_200_OK
+            )
+        else:
+            user = User.objects.create(email=kakao_email,nickname=kakao_nickname)
+            user.set_unusable_password()
+            user.save()
+            refresh = RefreshToken.for_user(user)
+            refresh["email"] = kakao_email
+            refresh["nickname"] = kakao_nickname
+            refresh["social"]="kakao"
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                status=status.HTTP_200_OK
+            )
+
